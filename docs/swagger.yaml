@@ -1,0 +1,321 @@
+definitions:
+  service.Subscription:
+    properties:
+      endDate:
+        type: string
+      id:
+        type: string
+      price:
+        type: integer
+      serviceName:
+        type: string
+      startDate:
+        type: string
+      userId:
+        type: string
+    type: object
+  service.SubscriptionRequest:
+    properties:
+      end_date:
+        type: string
+      price:
+        minimum: 0
+        type: integer
+      service_name:
+        type: string
+      start_date:
+        type: string
+      user_id:
+        type: string
+    required:
+    - service_name
+    - start_date
+    - user_id
+    type: object
+  service.SubscriptionResponse:
+    properties:
+      end_date:
+        type: string
+      id:
+        type: string
+      price:
+        type: integer
+      service_name:
+        type: string
+      start_date:
+        type: string
+      user_id:
+        type: string
+    type: object
+  service.SubscriptionUpdateRequest:
+    properties:
+      end_date:
+        type: string
+      price:
+        minimum: 0
+        type: integer
+      service_name:
+        type: string
+      start_date:
+        type: string
+    required:
+    - service_name
+    - start_date
+    type: object
+info:
+  contact: {}
+paths:
+  /subscriptions:
+    get:
+      consumes:
+      - application/json
+      description: Returns list of all subscriptions
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                items:
+                  $ref: '#/definitions/service.SubscriptionResponse'
+                type: array
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      summary: Get subscriptions list
+      tags:
+      - subscriptions
+    post:
+      consumes:
+      - application/json
+      description: Create new subscription for user
+      parameters:
+      - description: subscription data
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/service.SubscriptionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            properties:
+              data:
+                $ref: '#/definitions/service.Subscription'
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      summary: Create subscription
+      tags:
+      - subscriptions
+  /subscriptions/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a subscription by UUID
+      parameters:
+      - description: subscription id (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: invalid uuid format
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "404":
+          description: id not found
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: internal server error
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      summary: Delete subscription by id
+      tags:
+      - subscriptions
+    get:
+      consumes:
+      - application/json
+      description: Returns single subscription by UUID
+      parameters:
+      - description: subscription id (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                $ref: '#/definitions/service.SubscriptionResponse'
+            type: object
+        "400":
+          description: invalid uuid format
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "404":
+          description: id not found
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: internal server error
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      summary: Get subscription by id
+      tags:
+      - subscriptions
+    put:
+      consumes:
+      - application/json
+      description: Update subscription by id
+      parameters:
+      - description: subscription id (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: updated subscription data
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/service.SubscriptionUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              data:
+                $ref: '#/definitions/service.SubscriptionResponse'
+            type: object
+        "400":
+          description: invalid uuid / bad request / validation error
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "404":
+          description: id not found
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: internal server error
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      summary: Update subscription
+      tags:
+      - subscriptions
+  /subscriptions/total:
+    get:
+      consumes:
+      - application/json
+      description: Calculate total cost of subscriptions for selected period with
+        optional filters (user_id, service_name)
+      parameters:
+      - description: user id (UUID)
+        in: query
+        name: user_id
+        type: string
+      - description: service name filter
+        in: query
+        name: service_name
+        type: string
+      - description: start period (MM-YYYY)
+        in: query
+        name: from
+        required: true
+        type: string
+      - description: end period (MM-YYYY)
+        in: query
+        name: to
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: total subscription cost
+          schema:
+            properties:
+              total:
+                type: integer
+            type: object
+        "400":
+          description: invalid query params / bad date format / invalid uuid
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: internal server error
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      summary: Get total subscription cost
+      tags:
+      - subscriptions
+swagger: "2.0"
